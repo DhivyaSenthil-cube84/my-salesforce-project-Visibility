@@ -15,6 +15,6 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.projectKey=YOUR_PROJECT_KEY
-            -Dsonar.organization=YOUR_ORG_KEY
+            -Dsonar.projectKey=dhivyasenthil-cube84_my-salesforce-project-Visibility
+            -Dsonar.organization=dhivyasenthil-cube84
             -Dsonar.sources=force-app
