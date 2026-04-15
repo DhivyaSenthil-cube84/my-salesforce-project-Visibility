@@ -1,0 +1,18 @@
+public class IntegrationService {
+
+    // ❌ GITLEAKS WILL CATCH THESE
+    private static final String API_KEY = 'sk-prod-9f8a2b1c3d4e5f6a7b8c9d0e';
+    private static final String AWS_SECRET = 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY';
+    private static final String DB_PASSWORD = 'MyDatabase@Pass123!';
+    private static final String SLACK_TOKEN = 'xoxb-123456789-abcdefghijklmn';
+
+    public static HttpResponse callAPI(String payload) {
+        Http h = new Http();
+        HttpRequest req = new HttpRequest();
+        req.setEndpoint('https://api.example.com/v2/data');
+        req.setHeader('Authorization', 'Bearer ' + API_KEY);
+        req.setMethod('POST');
+        req.setBody(payload);
+        return h.send(req);
+    }
+}
