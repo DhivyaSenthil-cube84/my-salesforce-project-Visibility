@@ -1,25 +1,58 @@
 name: Salesforce Code Analyzer
+
 on:
   pull_request:
-    branches: [main]
+    branches:
+      - main
+      - se-develop
+    types: [opened, synchronize, reopened]
+
 jobs:
-  analyze:
+  salesforce-code-analyzer:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+      actions: read
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Install SF CLI
-        run: npm install -g @salesforce/cli
-      - name: Install Code Analyzer
-        run: sf plugins install @salesforce/plugin-code-analyzer
-      - name: Run scan
-        run: |
-          sf code-analyzer run \
-            --target force-app/ \
-            --format sarif \
-            --outfile results.sarif \
-            --engine pmd,eslint
-      - name: Upload to GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
         with:
-          sarif_file: results.sarif
+          node-version: "20"
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: "zulu"
+          java-version: "17"
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install Salesforce CLI
+        run: npm install -g @salesforce/cli@latest
+
+      - name: Install Code Analyzer plugin
+        run: sf plugins install code-analyzer@latest
+
+      - name: Run Salesforce Code Analyzer
+        id: run-code-analyzer
+        uses: forcedotcom/run-code-analyzer@v2
+        with:
+          run-arguments: --workspace . --view detail --output-file sfca_results.html --output-file sfca_results.json
+          results-artifact-name: salesforce-code-analyzer-results
+          github-token: ${{ github.token }}
+
+      - name: Fail if critical or high issues are found
+        if: |
+          steps.run-code-analyzer.outputs.exit-code > 0 ||
+          steps.run-code-analyzer.outputs.num-sev1-violations > 0 ||
+          steps.run-code-analyzer.outputs.num-sev2-violations > 0
+        run: exit 1
